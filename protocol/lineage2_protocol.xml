@@ -1,0 +1,330 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<protocol:protocol xmlns:protocol="http://schemas.rogiel.com/packetmagic/protocol"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://schemas.rogiel.com/packetmagic/protocol protocol.xsd"
+	endianess="LITTLE_ENDIAN" port="7777">
+	<codec class="com.magicparser.net.codec.Lineage2Codec" keyPacket="SM_KEY" />
+
+	<packet headerLength="2" opcodeLength="1">
+		<client>
+			<packet name="CM_PROTOCOL_VERSION" opcode="0e">
+				<integer name="protocol_version" />
+			</packet>
+			<packet name="CM_AUTH_LOGIN" opcode="08">
+				<string name="account_name" />
+				<bytes name="playKey" length="8" />
+				<bytes name="loginKey" length="8" />
+			</packet>
+			<packet name="CM_CHAR_SELECT" opcode="12">
+				<integer name="index" />
+				<bytes name="unk" length="14" />
+			</packet>
+			<packet name="CM_EXTENDED" opcode="d0">
+
+			</packet>
+			<packet name="CM_UNK1" opcode="92">
+				<bytes name="SM_CHAR_SELECTED -> unk3" length="4" />
+				<bytes name="SM_CHAR_SELECTED -> unk4" length="4" />
+				<bytes name="SM_CHAR_SELECTED -> unk5" length="4" />
+				<bytes name="SM_CHAR_SELECTED -> unk6" length="4" />
+			</packet>
+			<packet name="CM_UNK2" opcode="b1">
+				<bytes name="SM_UNK1 -> unk1" length="4" />
+				<integer name="unk2" />
+				<integer name="unk3" />
+			</packet>
+			<packet name="CM_ENTER_WORLD" opcode="11">
+				<bytes name="unk" length="103" />
+			</packet>
+			<packet name="CM_UNK3" opcode="3f" />
+			<packet name="CM_UNK4" opcode="9d" />
+			<packet name="CM_UNK5" opcode="c7" />
+			<packet name="CM_UNK6" opcode="58" />
+		</client>
+		<server>
+			<packet name="SM_KEY" opcode="2e">
+				<byte name="protocol_version_ok" />
+				<bytes name="key" length="8" />
+				<integer name="unk1" />
+				<integer name="server_id" />
+				<byte name="unk2" />
+				<integer name="obfuscation_key" />
+			</packet>
+			<packet name="SM_CHAR_LIST" opcode="09">
+				<integer name="chars" id="char_list_size" />
+				<integer name="max_chars" />
+				<byte name="unk1" />
+				<byte name="activated" />
+				<integer name="unk3" />
+				<for name="characters" part="char_list_size">
+					<string name="char_name" />
+					<integer name="char_object_id" />
+					<string name="username" />
+					<integer name="session id" />
+					<integer name="clan id" />
+					<integer name="unk1" />
+					<integer name="sex" />
+					<integer name="race" />
+					<integer name="class" />
+					<integer name="unk2" />
+					<integer name="x" />
+					<integer name="y" />
+					<integer name="z" />
+					<double name="hp" />
+					<double name="mp" />
+					<integer name="sp" />
+					<long name="experience" />
+					<integer name="unk3" /> <!-- new in goddess -->
+					<integer name="unk4" /> <!-- new in goddess -->
+					<integer name="level" />
+					<integer name="karma" />
+					<integer name="pk" />
+					<integer name="pvp" />
+					<integer name="unk2" />
+					<integer name="unk3" />
+					<integer name="unk4" />
+					<integer name="unk5" />
+					<integer name="unk6" />
+					<integer name="unk7" />
+					<integer name="unk8" />
+					<integer name="hair1 (1)" />
+					<integer name="right ear" />
+					<integer name="left ear" />
+					<integer name="neck" />
+					<integer name="right finger" />
+					<integer name="left finger" />
+					<integer name="head" />
+					<integer name="right hand" />
+					<integer name="left hand" />
+					<integer name="gloves" />
+					<integer name="chest" />
+					<integer name="legs" />
+					<integer name="feet" />
+					<integer name="cloak" />
+					<integer name="right hand 2" />
+					<integer name="hair1 (2)" />
+					<integer name="hair2" />
+					<integer name="right bracelet" />
+					<integer name="left bracelet" />
+					<integer name="dec1" />
+					<integer name="dec2" />
+					<integer name="dec3" />
+					<integer name="dec4" />
+					<integer name="dec5" />
+					<integer name="dec6" />
+					<integer name="belt" />
+					<integer name="hair style" />
+					<integer name="hair color" />
+					<integer name="face" />
+					<double name="max hp" />
+					<double name="max mp" />
+					<integer name="delete time" />
+					<integer name="class id" />
+					<integer name="selected" />
+					<byte name="enchant effect" />
+					<integer name="augmentation id" />
+					<integer name="transformation id" />
+
+					<integer name="unk9" />
+					<integer name="unk10" />
+					<integer name="unk11" />
+					<integer name="unk12" />
+					<integer name="unk13" />
+					<integer name="unk14" />
+					<integer name="unk15" />
+					<integer name="unk16" />
+					<integer name="unk17" />
+					<integer name="unk18" />
+				</for>
+			</packet>
+			<packet name="SM_EXTENDED" opcode="fe">
+				<extended opcodeLength="2">
+					<packet name="SM_MANOR_LIST" opcode="2200">
+						<integer name="count" id="manor_list_size" />
+						<for part="manor_list_size" name="manorList">
+							<integer name="id" />
+							<string name="name" />
+						</for>
+						<!-- <bytes name="unk1" length="2" /> -->
+					</packet>
+					<packet name="SM_EXT_UNK1" opcode="1e01" />
+					<packet name="SM_EXT_UNK2" opcode="e900" />
+					<packet name="SM_EXT_UNK3" opcode="1500" />
+					<packet name="SM_EXT_UNK4" opcode="8400" />
+					<packet name="SM_EXT_UNK5" opcode="4500" />
+					<packet name="SM_EXT_UNK6" opcode="da00" />
+					<packet name="SM_EXT_UNK7" opcode="1d01" />
+					<packet name="SM_EXT_UNK8" opcode="d900" />
+					<packet name="SM_EXT_UNK9" opcode="2f00" />
+				</extended>
+			</packet>
+			<packet name="SM_CHAR_SELECTED" opcode="0b">
+				<string name="name" />
+				<integer name="object id" />
+				<string name="title" />
+				<integer name="playkey1" />
+				<integer name="clan id" />
+				<integer name="unk1" />
+				<integer name="sex" />
+				<integer name="race" />
+				<integer name="class" />
+				<integer name="active?" />
+				<integer name="x" />
+				<integer name="y" />
+				<integer name="z" />
+				<double name="hp" />
+				<double name="mp" />
+				<integer name="sp" />
+				<long name="exp" />
+				<integer name="level" />
+				<integer name="karma" />
+				<integer name="pk" />
+				<integer name="INT" />
+				<integer name="STR" />
+				<integer name="CON" />
+				<integer name="MEN" />
+				<integer name="DEX" />
+				<integer name="WIT" />
+				<integer name="game time" />
+				<bytes name="unk2" length="4" />
+				<integer name="class id" />
+				<bytes name="unk3" length="4" />
+				<bytes name="unk4" length="4" />
+				<bytes name="unk5" length="4" />
+				<bytes name="unk6" length="4" />
+				<bytes name="unk bytes" length="64" />
+				<bytes name="unk7" length="4" />
+			</packet>
+			<packet name="SM_UNK1" opcode="d9">
+				<bytes name="unk1" length="4" />
+			</packet>
+			<packet name="SM_HTML" opcode="19">
+				<integer name="object id" />
+				<string name="html" />
+				<integer name="item id" />
+			</packet>
+			<packet name="SM_CHAR_MACRO_LIST" opcode="e8">
+				<integer name="revision" />
+				<byte name="unk1" />
+				<byte name="count" id="macro_count" />
+				<byte name="unk2" />
+				<for name="macro_for" part="macro_count">
+					<integer name="id" />
+					<string name="name" />
+					<string name="description" />
+					<string name="acronym" />
+					<byte name="icon" />
+					<byte name="commands count" id="macro_commands_count" />
+					<for name="macro_commands_for" part="macro_commands_count">
+						<byte name="id" />
+						<byte name="type" />
+						<integer name="skill id" />
+						<byte name="shortcut id" />
+						<string name="name" />
+					</for>
+				</for>
+			</packet>
+			<packet name="GM_GG_QUERY" opcode="74">
+				<bytes name="gg_key" length="16" />
+			</packet>
+			<packet name="SM_CHAR_HENNA_INFO" opcode="e5" />
+			<packet name="SM_UNK3" opcode="85" />
+			<packet name="SM_CHAR_INFO" opcode="32" />
+			<packet name="SM_CHAR_QUEST_STATUS" opcode="86" />
+			<packet name="SM_NPC_INFO" opcode="0c">
+				<integer name="object id" />
+				<integer name="template id" />
+				<integer name="attackable" />
+				<integer name="x" />
+				<integer name="y" />
+				<integer name="z" />
+				<integer name="angle" />
+				<integer name="unk1" />
+				<integer name="magical attack speed" />
+				<integer name="physical attack speed" />
+				<integer name="run speed" />
+				<integer name="walk speed" />
+				<integer name="run speed2" />
+				<integer name="walk speed2" />
+				<integer name="run speed3" />
+				<integer name="walk speed3" />
+				<integer name="run speed4" />
+				<integer name="walk speed4" />
+				<double name="unk2" />
+				<double name="unk3" />
+				<double name="coll radius" />
+				<double name="coll height" />
+				<integer name="rhand" />
+				<integer name="chest" />
+				<integer name="lhand" />
+				<byte name="showName" />
+				<byte name="running" />
+				<byte name="in combat" />
+				<byte name="is alike dead" />
+				<byte name="(0=teleported 1=default 2=summoned)" />
+				<integer name="unk" />
+				<integer name="unk" />
+				<integer name="unk" />
+				<integer name="unk" />
+				<string name="name" />
+				<string name="title" />
+				<integer name="titlecolor">
+					<color />
+				</integer>
+				<integer name="pvp flag" />
+				<integer name="karma" />
+				<integer name="abnormal effect" />
+				<integer name="clanid" />
+				<integer name="crestid" />
+				<integer name="allyid" />
+				<integer name="allycrestid" />
+				<byte name="is flying" />
+				<byte name="title color" />
+				<double name="coll radius2" />
+				<double name="coll height2" />
+				<integer name="enchant effect" />
+				<integer name="is flying2" />
+				<integer name="unk4" />
+				<integer name="color effect" />
+				<byte name="show name" />
+				<byte name="show title" />
+				<integer name="special effects" />
+				<integer name="display effects" />
+			</packet>
+			<packet name="SM_MOVE" opcode="2f">
+				<integer name="object_id" />
+				<integer name="target_x" />
+				<integer name="target_y" />
+				<integer name="target_z" />
+				<integer name="source_x" />
+				<integer name="source_y" />
+				<integer name="source_z" />
+			</packet>
+			<packet name="SM_CHAR_INFO_BROADCAST" opcode="31" />
+			<packet name="SM_CHAR_RELATION_CHANGED" opcode="ce">
+				<integer name="count" id="relations_count" />
+				<for part="relations_count" name="relations_for">
+					<integer name="object_id" />
+					<integer name="relation" />
+					<integer name="auto_attackable" />
+					<integer name="karma" />
+					<integer name="pvp" />
+				</for>
+			</packet>
+			<packet name="SM_SYSTEM_MESSAGE" opcode="62" />
+			<packet name="SM_ETC_STATUS_UPDATE" opcode="f9" />
+			<packet name="SM_UNK2" opcode="40" />
+			<packet name="SM_SKILL_COOLDOWN" opcode="c7" />
+			<packet name="SM_CHAT_MESSAGE" opcode="4a" />
+			<packet name="SM_CHAR_FRIENDLIST" opcode="75" />
+			<packet name="SM_CHAR_INVENTORY" opcode="11" />
+			<packet name="SM_CHAR_SHORTCUT_LIST" opcode="45" />
+			<packet name="SM_CHAR_SKILL_LIST" opcode="5f" />
+			<packet name="SM_UNK4" opcode="18" />
+			<packet name="SM_OBJECT_REMOVE" opcode="08" />
+			<packet name="SM_UNK5" opcode="30" />
+			<packet name="SM_CHAR_MOVE_TO_PAWN" opcode="72" />
+			<packet name="SM_CHAR_SKILL_USE" opcode="48" />
+		</server>
+	</packet>
+</protocol:protocol>

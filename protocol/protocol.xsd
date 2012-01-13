@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema version="1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema"
+	xmlns:jaxb="http://java.sun.com/xml/ns/jaxb" xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://java.sun.com/xml/ns/jaxb http://java.sun.com/xml/ns/jaxb/bindingschema_2_0.xsd"
+	jaxb:version="2.1" targetNamespace="http://schemas.rogiel.com/packetmagic/protocol"
+	xmlns:packet="http://schemas.rogiel.com/packetmagic/packet" xmlns:tns="http://schemas.rogiel.com/packetmagic/protocol">
+	<xs:import schemaLocation="packet.xsd"
+		namespace="http://schemas.rogiel.com/packetmagic/packet" />
+
+	<xs:element name="protocol" type="tns:ProtocolDescriptor" />
+
+	<xs:complexType name="ProtocolDescriptor">
+		<xs:all>
+			<xs:element name="codec" minOccurs="0">
+				<xs:complexType>
+					<xs:attribute name="class" type="xs:string" />
+					<xs:attribute name="keyPacket" type="xs:IDREF" />
+				</xs:complexType>
+			</xs:element>
+
+			<xs:element name="packet">
+				<xs:complexType>
+					<xs:all>
+						<xs:element name="client">
+							<xs:complexType>
+								<xs:sequence minOccurs="1" maxOccurs="unbounded">
+									<xs:element name="packet" type="packet:PacketDescriptor" />
+								</xs:sequence>
+							</xs:complexType>
+						</xs:element>
+						<xs:element name="server">
+							<xs:complexType>
+								<xs:sequence minOccurs="1" maxOccurs="unbounded">
+									<xs:element name="packet" type="packet:PacketDescriptor" />
+								</xs:sequence>
+							</xs:complexType>
+						</xs:element>
+					</xs:all>
+					<xs:attribute name="headerLength" type="xs:int" use="required" />
+					<xs:attribute name="opcodeLength" type="xs:int" use="required" />
+				</xs:complexType>
+			</xs:element>
+		</xs:all>
+		<xs:attribute name="port" type="xs:int" use="required" />
+		<xs:attribute name="endianess" default="LITTLE_ENDIAN">
+			<xs:simpleType>
+				<xs:annotation>
+					<xs:appinfo>
+						<jaxb:typesafeEnumClass name="ProtocolByteOrder" />
+					</xs:appinfo>
+				</xs:annotation>
+				<xs:restriction base="xs:string">
+					<xs:enumeration value="LITTLE_ENDIAN" />
+					<xs:enumeration value="BIG_ENDIAN" />
+				</xs:restriction>
+			</xs:simpleType>
+		</xs:attribute>
+	</xs:complexType>
+</xs:schema>

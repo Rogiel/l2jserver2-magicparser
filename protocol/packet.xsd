@@ -1,0 +1,227 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema version="1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema"
+	xmlns:jaxb="http://java.sun.com/xml/ns/jaxb" xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://java.sun.com/xml/ns/jaxb http://java.sun.com/xml/ns/jaxb/bindingschema_2_0.xsd"
+	jaxb:version="2.1" targetNamespace="http://schemas.rogiel.com/packetmagic/packet"
+	xmlns:tns="http://schemas.rogiel.com/packetmagic/packet">
+	<xs:element name="packet" type="tns:PacketDescriptor" />
+
+	<xs:complexType name="PacketDescriptor">
+		<xs:choice>
+			<xs:group ref="tns:parts" maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:appinfo>
+						<jaxb:property name="parts">
+							<jaxb:baseType name="PacketPartDescriptor" />
+						</jaxb:property>
+					</xs:appinfo>
+				</xs:annotation>
+			</xs:group>
+			<xs:element name="extended" minOccurs="0" maxOccurs="1">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="packet" type="tns:PacketDescriptor" maxOccurs="unbounded" />
+					</xs:sequence>
+					<xs:attribute name="opcodeLength" type="xs:int"
+						use="required" />
+				</xs:complexType>
+			</xs:element>
+		</xs:choice>
+
+		<xs:attribute name="name" type="xs:ID" use="required" />
+		<xs:attribute name="opcode" type="xs:hexBinary" use="required" />
+	</xs:complexType>
+
+	<xs:group name="parts">
+		<xs:sequence>
+			<xs:element name="string" minOccurs="0"
+				type="tns:StringPacketPartDescriptor" />
+			<xs:element name="bytes" minOccurs="0"
+				type="tns:ByteArrayPacketPartDescriptor" />
+			<xs:element name="byte" minOccurs="0"
+				type="tns:BytePacketPartDescriptor" />
+			<xs:element name="integer" minOccurs="0"
+				type="tns:IntegerPacketPartDescriptor" />
+			<xs:element name="long" minOccurs="0"
+				type="tns:LongPacketPartDescriptor" />
+			<xs:element name="double" minOccurs="0"
+				type="tns:DoublePacketPartDescriptor" />
+			<xs:element name="float" minOccurs="0"
+				type="tns:FloatPacketPartDescriptor" />
+			<xs:element name="for" minOccurs="0"
+				type="tns:ForPacketPartDescriptor" />
+			<xs:element name="switch" minOccurs="0"
+				type="tns:SwitchPacketPartDescriptor" />
+		</xs:sequence>
+	</xs:group>
+
+	<xs:complexType name="PacketPartDescriptor" abstract="true">
+		<xs:attribute name="name" type="xs:string" use="required" />
+		<xs:attribute name="id" type="xs:ID" use="optional" />
+	</xs:complexType>
+
+	<xs:complexType name="DataPacketPartDescriptor"
+		abstract="true">
+		<xs:complexContent>
+			<xs:extension base="tns:PacketPartDescriptor" />
+		</xs:complexContent>
+	</xs:complexType>
+
+	<xs:complexType name="StringPacketPartDescriptor">
+		<xs:complexContent>
+			<xs:extension base="tns:DataPacketPartDescriptor">
+				<xs:choice minOccurs="0">
+					<xs:annotation>
+						<xs:appinfo>
+							<jaxb:property name="reader">
+								<jaxb:baseType name="ReaderDescriptor" />
+							</jaxb:property>
+						</xs:appinfo>
+					</xs:annotation>
+					<xs:element name="html" type="tns:HTMLReaderDescriptor" />
+				</xs:choice>
+				<xs:attribute name="encoding" type="xs:string" use="optional"
+					default="UTF-8" />
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+
+	<xs:complexType name="ByteArrayPacketPartDescriptor">
+		<xs:complexContent>
+			<xs:extension base="tns:DataPacketPartDescriptor">
+				<xs:attribute name="length" type="xs:int" use="required" />
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+
+	<xs:complexType name="NumericPacketPartDescriptor"
+		abstract="true">
+		<xs:complexContent>
+			<xs:extension base="tns:DataPacketPartDescriptor">
+				<xs:choice minOccurs="0">
+					<xs:annotation>
+						<xs:appinfo>
+							<jaxb:property name="reader">
+								<jaxb:baseType name="ReaderDescriptor" />
+							</jaxb:property>
+						</xs:appinfo>
+					</xs:annotation>
+					<xs:element name="boolean" type="tns:BooleanReaderDescriptor" />
+					<xs:element name="color" type="tns:ColorReaderDescriptor" />
+				</xs:choice>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+
+	<xs:complexType name="BytePacketPartDescriptor">
+		<xs:complexContent>
+			<xs:extension base="tns:NumericPacketPartDescriptor" />
+		</xs:complexContent>
+	</xs:complexType>
+
+	<xs:complexType name="LongPacketPartDescriptor">
+		<xs:complexContent>
+			<xs:extension base="tns:NumericPacketPartDescriptor" />
+		</xs:complexContent>
+	</xs:complexType>
+
+	<xs:complexType name="IntegerPacketPartDescriptor">
+		<xs:complexContent>
+			<xs:extension base="tns:NumericPacketPartDescriptor" />
+		</xs:complexContent>
+	</xs:complexType>
+
+	<xs:complexType name="FloatPacketPartDescriptor">
+		<xs:complexContent>
+			<xs:extension base="tns:NumericPacketPartDescriptor" />
+		</xs:complexContent>
+	</xs:complexType>
+
+	<xs:complexType name="DoublePacketPartDescriptor">
+		<xs:complexContent>
+			<xs:extension base="tns:NumericPacketPartDescriptor" />
+		</xs:complexContent>
+	</xs:complexType>
+
+	<xs:complexType name="ReferencedPacketPartDescriptor"
+		abstract="true">
+		<xs:complexContent>
+			<xs:extension base="tns:PacketPartDescriptor">
+				<xs:attribute name="part" type="xs:IDREF" use="required">
+					<xs:annotation>
+						<xs:appinfo>
+							<jaxb:property name="referencePart">
+								<jaxb:baseType name="PacketPartDescriptor" />
+							</jaxb:property>
+						</xs:appinfo>
+					</xs:annotation>
+				</xs:attribute>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+
+	<xs:complexType name="ForPacketPartDescriptor">
+		<xs:complexContent>
+			<xs:extension base="tns:ReferencedPacketPartDescriptor">
+				<xs:group ref="tns:parts" maxOccurs="unbounded">
+					<xs:annotation>
+						<xs:appinfo>
+							<jaxb:property name="parts">
+								<jaxb:baseType name="PacketPartDescriptor" />
+							</jaxb:property>
+						</xs:appinfo>
+					</xs:annotation>
+				</xs:group>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+
+	<xs:complexType name="SwitchPacketPartDescriptor">
+		<xs:complexContent>
+			<xs:extension base="tns:ReferencedPacketPartDescriptor">
+				<xs:sequence>
+					<xs:element name="case" minOccurs="1" maxOccurs="unbounded">
+						<xs:annotation>
+							<xs:appinfo>
+								<jaxb:property name="switchCases" />
+							</xs:appinfo>
+						</xs:annotation>
+						<xs:complexType>
+							<xs:group ref="tns:parts" maxOccurs="unbounded">
+								<xs:annotation>
+									<xs:appinfo>
+										<jaxb:property name="parts">
+											<jaxb:baseType name="PacketPartDescriptor" />
+										</jaxb:property>
+									</xs:appinfo>
+								</xs:annotation>
+							</xs:group>
+							<xs:attribute name="value" type="xs:integer" />
+						</xs:complexType>
+					</xs:element>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+
+	<xs:complexType name="ReaderDescriptor" abstract="true" />
+
+	<xs:complexType name="BooleanReaderDescriptor">
+		<xs:complexContent>
+			<xs:extension base="tns:ReaderDescriptor" />
+		</xs:complexContent>
+	</xs:complexType>
+
+	<xs:complexType name="ColorReaderDescriptor">
+		<xs:complexContent>
+			<xs:extension base="tns:ReaderDescriptor" />
+		</xs:complexContent>
+	</xs:complexType>
+
+	<xs:complexType name="HTMLReaderDescriptor">
+		<xs:complexContent>
+			<xs:extension base="tns:ReaderDescriptor" />
+		</xs:complexContent>
+	</xs:complexType>
+</xs:schema>
