@@ -1,0 +1,7 @@
+This is a new tool build using JNetPcap and SWT to anaylize binary
+protocol traffic. Every protocol is defined within an XML file that
+describes all the packets. Once the traffic is being captured or
+analyzed from an offline dump, the packet content is parsed and
+displayed on an rich SWT UI.
+
+Created by Rogiel (http://rogiel.com)
