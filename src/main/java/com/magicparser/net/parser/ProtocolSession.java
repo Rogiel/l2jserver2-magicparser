@@ -19,9 +19,9 @@ package com.magicparser.net.parser;
 import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.nio.channels.WritableByteChannel;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -73,11 +73,11 @@ public class ProtocolSession {
 	/**
 	 * The protocol byte buffer
 	 */
-	private ByteBuffer clientBuffer = ByteBuffer.allocate(1460 * 20);
+	private final ByteBuffer clientBuffer = ByteBuffer.allocate(1460 * 20);
 	/**
 	 * The protocol byte buffer
 	 */
-	private ByteBuffer serverBuffer = ByteBuffer.allocate(1460 * 20);
+	private final ByteBuffer serverBuffer = ByteBuffer.allocate(1460 * 20);
 
 	/**
 	 * @param id
@@ -111,8 +111,8 @@ public class ProtocolSession {
 	 * @throws UnknownPartTypeProtocolParserException
 	 *             if the packet part descriptor could not be found
 	 */
-	protected ProtocolPacket[] receivePacket(WritableByteChannel channel,
-			Tcp tcp, Ip4 ip) throws InvalidPacketProtocolParserException,
+	protected ProtocolPacket[] receivePacket(Tcp tcp, Ip4 ip)
+			throws InvalidPacketProtocolParserException,
 			UnknownPacketProtocolParserException,
 			UnknownPartTypeProtocolParserException {
 		// since only clients starts connections, we can use this to match the
@@ -133,35 +133,32 @@ public class ProtocolSession {
 		ProtocolPacket protocolPacket;
 		if (isClientPacket(ip)) {
 			try {
-				clientBuffer = ByteBuffer.wrap(data);
+				clientBuffer.put(data).flip();
 				while (isPacketComplete(PacketDirection.CLIENT)) {
 					protocolPacket = readPacket(PacketDirection.CLIENT);
 					trySetKey(protocolPacket);
 					packets.add(protocolPacket);
 				}
-				//clientBuffer.compact();
-				//clientBuffer.clear();
-				//clientBuffer.put(new byte[clientBuffer.remaining()]).clear();
-			} catch (RuntimeException e) {
+				clientBuffer.compact();
+			} catch (BufferOverflowException e) {
 				clientBuffer.clear();
-				clientBuffer.put(new byte[clientBuffer.remaining()]).clear();
+				clientBuffer.put(new byte[clientBuffer.remaining()]);
+				serverBuffer.clear();
 				throw e;
 			}
 		} else {
 			try {
-				serverBuffer = ByteBuffer.wrap(data);
-				//serverBuffer.put(data).flip();
+				serverBuffer.put(data).flip();
 				while (isPacketComplete(PacketDirection.SERVER)) {
 					protocolPacket = readPacket(PacketDirection.SERVER);
 					trySetKey(protocolPacket);
 					packets.add(protocolPacket);
 				}
-				//serverBuffer.compact();
-				//serverBuffer.clear();
-				//serverBuffer.put(new byte[clientBuffer.remaining()]).clear();
-			} catch (RuntimeException e) {
+				serverBuffer.compact();
+			} catch (BufferOverflowException e) {
 				serverBuffer.clear();
-				serverBuffer.put(new byte[serverBuffer.remaining()]).clear();
+				serverBuffer.put(new byte[serverBuffer.remaining()]);
+				serverBuffer.clear();
 				throw e;
 			}
 		}
@@ -169,7 +166,7 @@ public class ProtocolSession {
 	}
 
 	private void trySetKey(ProtocolPacket packet) {
-		if (packet != null && packet.getDescritor() != null)
+		if (packet != null)
 			if (packet.getDescritor().equals(
 					descriptor.getCodec().getKeyPacket())) {
 				serverCodec.receivedKey(packet);
@@ -189,7 +186,7 @@ public class ProtocolSession {
 		final int initialRemain = buffer.remaining();
 		final int len = read(buffer, descriptor.getPacket().getHeaderLength()) & 0xFFFF;
 		
-		buffer.order(ByteOrder.LITTLE_ENDIAN);
+		System.out.println(len);
 
 		if (len == 0)
 			return null;
@@ -197,31 +194,23 @@ public class ProtocolSession {
 			buffer.position(initialPos);
 			throw new IllegalArgumentException(ByteUtils.hexDump(buffer));
 		}
-//		codec.decode(buffer);
-//		final int opcode = buffer.get();
-////		if(opcode == 0x19) {
-////			System.out.println(ByteUtils.hexDump(buffer));
-////			System.out.println(ByteUtils.printData(buffer, buffer.remaining()));
-////		}
-//		return null;
-//		
 		if (initialRemain < len)
 			return null;
 
-//		ByteBuffer packetBuffer = ByteBuffer.allocate(buffer.remaining());
-//		packetBuffer.order(ByteOrder.LITTLE_ENDIAN);
-//		packetBuffer.put(buffer);
-//		packetBuffer.flip();
+		ByteBuffer packetBuffer = ByteBuffer.allocate(buffer.remaining());
+		packetBuffer.order(ByteOrder.LITTLE_ENDIAN);
+		packetBuffer.put(buffer);
+		packetBuffer.flip();
 
-		codec.decode(buffer);
+		codec.decode(packetBuffer);
 		try {
 			if (direction == PacketDirection.CLIENT)
-				return parser.parseClientPacket(buffer);
+				return parser.parseClientPacket(packetBuffer);
 			else
-				return parser.parseServerPacket(buffer);
+				return parser.parseServerPacket(packetBuffer);
 		} finally {
 			// buffer.limit(initialLimit);
-			//buffer.position(initialPos + len);
+			buffer.position(initialPos + len);
 		}
 	}
 

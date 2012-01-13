@@ -164,25 +164,6 @@ public class PacketComposite extends Composite {
 				tableViewer.refresh();
 			}
 		});
-		
-		final ViewerFilter filter = new ViewerFilter() {
-			@Override
-			public boolean select(Viewer viewer, Object parentElement,
-					Object element) {
-				if (element instanceof ProtocolPacket) {
-					final ProtocolPacket packet = (ProtocolPacket) element;
-					if(packet.getDescritor() == null)
-						return false;
-					if (packet.getDescritor().getName() != null) {
-						return packet.getDescritor().getName()
-								.toLowerCase()
-								.startsWith("SM_HTML");
-					}
-				}
-				return false;
-			}
-		};
-		tableViewer.addFilter(filter);
 
 		TableViewerColumn tableViewerColumn = new TableViewerColumn(
 				tableViewer, SWT.NONE);

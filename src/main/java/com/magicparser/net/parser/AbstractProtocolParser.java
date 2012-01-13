@@ -24,17 +24,14 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.jnetpcap.Pcap;
-import org.jnetpcap.PcapHeader;
-import org.jnetpcap.nio.JBuffer;
-import org.jnetpcap.packet.JMemoryPacket;
+import org.jnetpcap.packet.PcapPacket;
+import org.jnetpcap.packet.PcapPacketHandler;
 import org.jnetpcap.protocol.network.Ip4;
 import org.jnetpcap.protocol.tcpip.Tcp;
 
 import com.magicparser.net.ProtocolPacketParser;
 import com.magicparser.net.impl.ProtocolPacketParserImpl;
 import com.magicparser.net.packet.ProtocolPacket;
-import com.magicparser.util.jnetpcap.IpReassemblyBuffer.IpReassembly;
-import com.magicparser.util.jnetpcap.IpReassemblyBuffer.IpReassemblyHandler;
 import com.rogiel.packetmagic.packet.ProtocolDescriptor;
 
 /**
@@ -116,12 +113,51 @@ public abstract class AbstractProtocolParser implements Runnable {
 			channel = null;
 		}
 
-		// captor.loop(-1, new PcapPacketHandler<Object>() {
+		captor.loop(-1, new PcapPacketHandler<Object>() {
+			private final Ip4 ip = new Ip4();
+			private final Tcp tcp = new Tcp();
+
+			@Override
+			public void nextPacket(PcapPacket packet, Object user) {
+				if (!(packet.hasHeader(ip) && packet.hasHeader(tcp)))
+					return;
+				if (!(tcp.source() == descriptor.getPort() || tcp.destination() == descriptor
+						.getPort()))
+					return;
+				try {
+					if (tcp.flags_SYN()) {
+						createSession(tcp.source() * tcp.destination())
+								.receivePacket(tcp, ip);
+						return;
+					} else if (tcp.flags_RST()) {
+						destroySession(getSession(tcp.source()
+								* tcp.destination()));
+						return;
+					} else {
+						final ProtocolSession session = getSession(tcp.source()
+								* tcp.destination());
+						final ProtocolPacket[] protocolPackets = session
+								.receivePacket(tcp, ip);
+						if (protocolPackets == null)
+							return;
+						for (final ProtocolPacket protocolPacket : protocolPackets) {
+							listener.receivePacket(session, protocolPacket);
+						}
+					}
+				} catch (Throwable e) {
+					if (listener.onException(e))
+						return;
+				}
+			}
+		}, null);
+		// captor.loop(-1, new IpReassembly(5 * 1000, new IpReassemblyHandler()
+		// {
 		// private final Ip4 ip = new Ip4();
 		// private final Tcp tcp = new Tcp();
 		//
 		// @Override
-		// public void nextPacket(PcapPacket packet, Object user) {
+		// public void nextPacket(JMemoryPacket packet, PcapHeader header,
+		// JBuffer buffer) {
 		// if (!(packet.hasHeader(ip) && packet.hasHeader(tcp)))
 		// return;
 		// if (!(tcp.source() == descriptor.getPort() || tcp.destination() ==
@@ -153,45 +189,7 @@ public abstract class AbstractProtocolParser implements Runnable {
 		// return;
 		// }
 		// }
-		// }, null);
-		captor.loop(-1, new IpReassembly(5 * 1000, new IpReassemblyHandler() {
-			private final Ip4 ip = new Ip4();
-			private final Tcp tcp = new Tcp();
-
-			@Override
-			public void nextPacket(JMemoryPacket packet, PcapHeader header,
-					JBuffer buffer) {
-				if (!(packet.hasHeader(ip) && packet.hasHeader(tcp)))
-					return;
-				if (!(tcp.source() == descriptor.getPort() || tcp.destination() == descriptor
-						.getPort()))
-					return;
-				try {
-					if (tcp.flags_SYN()) {
-						createSession(tcp.source() * tcp.destination())
-								.receivePacket(channel, tcp, ip);
-						return;
-					} else if (tcp.flags_RST()) {
-						destroySession(getSession(tcp.source()
-								* tcp.destination()));
-						return;
-					} else {
-						final ProtocolSession session = getSession(tcp.source()
-								* tcp.destination());
-						final ProtocolPacket[] protocolPackets = session
-								.receivePacket(channel, tcp, ip);
-						if (protocolPackets == null)
-							return;
-						for (final ProtocolPacket protocolPacket : protocolPackets) {
-							listener.receivePacket(session, protocolPacket);
-						}
-					}
-				} catch (Throwable e) {
-					if (listener.onException(e))
-						return;
-				}
-			}
-		}), null);
+		// }), null);
 	}
 
 	/**
